@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.2', '8.3', '8.4', '8.5']
+    name: PHP ${{ matrix.php }} Test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+
+      - name: Build extension
+        run: |
+          phpize
+          ./configure --enable-uri_template
+          make
+
+      - name: Run tests
+        run: make test NO_INTERACTION=1 REPORT_EXIT_STATUS=1
+
+  memcheck:
+    runs-on: ubuntu-latest
+    name: Memory Leak Test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y valgrind
+
+      - name: Setup PHP with debug
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+
+      - name: Build extension
+        run: |
+          phpize
+          ./configure --enable-uri_template
+          make
+
+      - name: Run tests with memory check
+        run: |
+          make test NO_INTERACTION=1 TEST_PHP_ARGS="-m" || true
+          if ls tests/*.mem 1>/dev/null 2>&1; then
+            echo "Memory leaks detected:"
+            cat tests/*.mem
+            exit 1
+          fi
+          echo "No memory leaks detected"
