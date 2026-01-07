@@ -132,61 +132,58 @@ inline static void append_malformed_expr(smart_str *dest, char *tpl, int len)
 static void add_expr_to_array(zval *expressions, uri_template_expr *expr)
 {
 	uri_template_var *next;
-	zval *result;
-	zval *vars;
+	zval result;
+	zval vars_arr;
 	char op[2] = {expr->op, 0};
 	char sep[2] = {expr->sep, 0};
 	char ifemp[2] = {expr->ifemp, 0};
-	
-	MAKE_STD_ZVAL(result);
-	array_init(result);
-	
-	add_assoc_string(result, "op", op, 1);
-	add_assoc_string(result, "sep", sep, 1);
-	add_assoc_string(result, "ifemp", ifemp, 1);
-	add_assoc_bool(result, "allow", expr->allow);
-	add_assoc_bool(result, "named", expr->named);
-	add_assoc_bool(result, "error", expr->error);
-	
-	MAKE_STD_ZVAL(vars);
-	array_init_size(vars, expr->vars->count);
-	
+
+	array_init(&result);
+
+	add_assoc_string(&result, "op", op);
+	add_assoc_string(&result, "sep", sep);
+	add_assoc_string(&result, "ifemp", ifemp);
+	add_assoc_bool(&result, "allow", expr->allow);
+	add_assoc_bool(&result, "named", expr->named);
+	add_assoc_bool(&result, "error", expr->error);
+
+	array_init_size(&vars_arr, expr->vars->count);
+
 	next = expr->vars->first;
-	
+
 	while (next != NULL) {
-		zval *var;
-		
-		MAKE_STD_ZVAL(var);
-		array_init(var);
-		
-		add_assoc_string(var, "name", next->name, 1);
-		add_assoc_long(var, "length", next->length);
-		add_assoc_bool(var, "explode", next->explode);
-		add_next_index_zval(vars, var);
-		
+		zval var;
+
+		array_init(&var);
+
+		add_assoc_string(&var, "name", next->name);
+		add_assoc_long(&var, "length", next->length);
+		add_assoc_bool(&var, "explode", next->explode);
+		add_next_index_zval(&vars_arr, &var);
+
 		next = next->next;
 	}
-	
-	add_assoc_zval(result, "vars", vars);
-	add_next_index_zval(expressions, result);
+
+	add_assoc_zval(&result, "vars", &vars_arr);
+	add_next_index_zval(expressions, &result);
 }
 
 void uri_template_parse(char *tpl, zval *return_value, zval *vars, zval *capture)
 {
 	smart_str result = {0};
-	zval *expressions = NULL;
-	zval  vars_ptr;
+	zval expressions;
+	zval vars_ptr;
 	unsigned char c;
 	char *start;
 	int state = URI_TEMPLATE_ERROR_NONE;
+	int has_expressions = 0;
 
 	if (capture != NULL) {
-		MAKE_STD_ZVAL(expressions);
-		array_init(expressions);
+		array_init(&expressions);
+		has_expressions = 1;
 	}
 
-	vars_ptr = *vars;
-	zval_copy_ctor(&vars_ptr);
+	ZVAL_COPY(&vars_ptr, vars);
 
 	while (*tpl) {
 		if (*tpl == '{') {
@@ -208,8 +205,8 @@ void uri_template_parse(char *tpl, zval *return_value, zval *vars, zval *capture
 						uri_template_process(expr, &vars_ptr, &result);
 					}
 
-					if (expressions != NULL) {
-						add_expr_to_array(expressions, expr);
+					if (has_expressions) {
+						add_expr_to_array(&expressions, expr);
 					}
 
 					uri_template_expr_free(expr);
@@ -236,12 +233,12 @@ void uri_template_parse(char *tpl, zval *return_value, zval *vars, zval *capture
 				smart_str_appendc(&result, *(++tpl));
 				smart_str_appendc(&result, *(++tpl));
 			} else {
-				int result_len = result.len;
-				int distance = 0;
+				size_t result_len = result.s ? ZSTR_LEN(result.s) : 0;
+				size_t distance = 0;
 
 				uri_template_substr_copy(&result, tpl, 1, URI_TEMPLATE_ALLOW_RESERVED);
-        
-				distance = result.len - result_len;
+
+				distance = (result.s ? ZSTR_LEN(result.s) : 0) - result_len;
 				tpl += (distance % 3 ? 1 : distance / 3) - 1;
 			}
 		}
@@ -250,14 +247,14 @@ void uri_template_parse(char *tpl, zval *return_value, zval *vars, zval *capture
 	}
 
 	smart_str_0(&result);
-	ZVAL_STRING(return_value, result.c ? result.c : "", 1);
+	ZVAL_STRING(return_value, result.s ? ZSTR_VAL(result.s) : "");
 
 	if (capture != NULL) {
-		add_assoc_string(capture, "result", result.c ? result.c : "", 1);
+		add_assoc_string(capture, "result", result.s ? ZSTR_VAL(result.s) : "");
 		add_assoc_long(capture, "state", state);
-		add_assoc_zval(capture, "expressions", expressions);
+		add_assoc_zval(capture, "expressions", &expressions);
 	}
-	
-	zval_dtor(&vars_ptr);
+
+	zval_ptr_dtor(&vars_ptr);
 	smart_str_free(&result);
 }

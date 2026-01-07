@@ -14,17 +14,18 @@
 PHP_FUNCTION(uri_template)
 {
 	char *tpl;
-	int   len;
+	size_t len;
 	zval *vars;
 	zval *result = NULL;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sa|z", 
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "sa|z",
 			&tpl, &len, &vars, &result) == FAILURE) {
 		RETURN_NULL();
 	}
-	
+
 	if (result != NULL) {
-		zval_dtor(result);
+		ZVAL_DEREF(result);
+		zval_ptr_dtor(result);
 		array_init(result);
 	}
 
@@ -33,10 +34,10 @@ PHP_FUNCTION(uri_template)
 /* }}} */
 
 /* {{{ arginfo */
-ZEND_BEGIN_ARG_INFO_EX(uri_template_arg_info, 0, 3, 2)
-	ZEND_ARG_INFO(0, "template")
-	ZEND_ARG_ARRAY_INFO(0, "variables", 0)
-	ZEND_ARG_INFO(1, "result")
+ZEND_BEGIN_ARG_INFO_EX(uri_template_arg_info, 0, 0, 2)
+	ZEND_ARG_INFO(0, template)
+	ZEND_ARG_ARRAY_INFO(0, variables, 0)
+	ZEND_ARG_INFO(1, result)
 ZEND_END_ARG_INFO()
 /* }}} */
 
@@ -66,7 +67,7 @@ PHP_MINIT_FUNCTION(uri_template)
  */
 const zend_function_entry uri_template_functions[] = {
 	PHP_FE(uri_template, uri_template_arg_info)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 /* }}} */
 
