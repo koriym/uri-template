@@ -188,8 +188,11 @@ void uri_template_parse(char *tpl, zval *return_value, zval *vars, zval *capture
 	while (*tpl) {
 		if (*tpl == '{') {
 			start = tpl + 1;
+			tpl++;
 
-			while (*(tpl++) && *tpl != '}' && *tpl != '{');
+			while (*tpl && *tpl != '}' && *tpl != '{') {
+				tpl++;
+			}
 
 			if (*tpl == '}') {
 				if (tpl - start > 0) {
@@ -218,9 +221,11 @@ void uri_template_parse(char *tpl, zval *return_value, zval *vars, zval *capture
 				state = URI_TEMPLATE_ERROR_SYNTAX;
 				tpl--;
 			} else {
+				/* Incomplete expression - hit end of string */
 				smart_str_appendc(&result, '{');
 				smart_str_appendl(&result, start, tpl - start);
 				state = URI_TEMPLATE_ERROR_SYNTAX;
+				break;
 			}
 		} else {
 			c = *tpl;
