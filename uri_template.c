@@ -74,9 +74,7 @@ const zend_function_entry uri_template_functions[] = {
 /* {{{ uri_template_module_entry
  */
 zend_module_entry uri_template_module_entry = {
-#if ZEND_MODULE_API_NO >= 20010901
 	STANDARD_MODULE_HEADER,
-#endif
 	PHP_URI_TEMPLATE_EXTNAME,
 	uri_template_functions,
 	PHP_MINIT(uri_template),
@@ -84,9 +82,7 @@ zend_module_entry uri_template_module_entry = {
 	NULL,
 	NULL,
 	PHP_MINFO(uri_template),
-#if ZEND_MODULE_API_NO >= 20010901
 	PHP_URI_TEMPLATE_VERSION,
-#endif
 	STANDARD_MODULE_PROPERTIES
 };
 /* }}} */

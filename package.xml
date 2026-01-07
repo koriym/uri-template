@@ -17,8 +17,8 @@ Implementation of URI Template(RFC6570) specification for PHP.
   </lead>
   <date>2013-10-14</date>
   <version>
-    <release>1.0</release>
-    <api>1.0</api>
+    <release>2.0.0</release>
+    <api>2.0.0</api>
   </version>
   <stability>
     <release>stable</release>

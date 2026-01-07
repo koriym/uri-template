@@ -10,7 +10,7 @@
 #define PHP_URI_TEMPLATE_H
 
 #define PHP_URI_TEMPLATE_EXTNAME "uri_template"
-#define PHP_URI_TEMPLATE_VERSION "1.0"
+#define PHP_URI_TEMPLATE_VERSION "2.0.0"
 
 #define URI_TEMPLATE_ERROR_NONE       0
 #define URI_TEMPLATE_ERROR            1
@@ -79,12 +79,5 @@ void uri_template_expr_free(uri_template_expr *expr);
 void uri_template_parse(char *tpl, zval *return_value, zval *vars, zval *capture);
 void uri_template_process(uri_template_expr *expr, zval *vars, smart_str *result);
 void uri_template_substr_copy(smart_str *dest, char *source, size_t num, int allowed_chars);
-
-#ifdef ZTS
-#define IF_G(v) TSRMG(filter_globals_id, zend_filter_globals *, v)
-#else
-#define IF_G(v) (filter_globals.v)
-
-#endif
 
 #endif
