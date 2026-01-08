@@ -15,7 +15,7 @@ Implementation of URI Template(RFC6570) specification for PHP.
     <email>ioseb.dzmanashvili@gmail.com</email>
     <active>yes</active>
   </lead>
-  <date>2013-10-14</date>
+  <date>2026-01-08</date>
   <version>
     <release>2.0.0</release>
     <api>2.0.0</api>

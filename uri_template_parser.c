@@ -183,7 +183,7 @@ void uri_template_parse(char *tpl, zval *return_value, zval *vars, zval *capture
 		has_expressions = 1;
 	}
 
-	ZVAL_COPY(&vars_ptr, vars);
+	ZVAL_DUP(&vars_ptr, vars);
 
 	while (*tpl) {
 		if (*tpl == '{') {
