@@ -60,6 +60,9 @@ static void process_associative_array(URI_TEMPLATE_PROCESSING_ARGS)
 	ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(vars), num_key, str_key, entry) {
 		zend_string *entry_str;
 		(void)num_key;
+		if (!str_key) {
+			continue;
+		}
 		if (i > 0) {
 			smart_str_appendc(result, separator);
 		}
